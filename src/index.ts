@@ -3,6 +3,7 @@ import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
 import dotenv from "dotenv"
 import cors from "cors"
+import { prismaClient } from "./lib/db";
 
 //npx gitignore Node for gitignore generate
 dotenv.config({
@@ -17,10 +18,28 @@ async function init() {
         typeDefs: `
         type Query{
            hello:String
+        }
+        type Mutation {
+            createUser(firstName:String!, LastName:String!, email:String!, password:String!):Boolean
         }`,
         resolvers: {
             Query: {
-                hello: () => `Hello suhidr`
+                hello: () => `Hello sudhirYadav`
+            },
+            Mutation: {
+                createUser: async (_,
+                    { firstName, lastName, email, password }: { firstName: string, lastName: string, email: string, password: string }) => {
+                    await prismaClient.user.create({
+                        data: {
+                            email,
+                            password,
+                            firstName,
+                            lastName,
+                            salt: "random_salt"
+                        }
+                    })
+                    return true;
+                }
             }
         },
     });
